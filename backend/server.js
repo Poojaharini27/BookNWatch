@@ -8,7 +8,11 @@ const QRCode = require('qrcode');
 const paypal = require("paypal-rest-sdk");
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', 
+    methods: ['GET', 'POST'],       
+    credentials: true                
+}));
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
@@ -149,78 +153,7 @@ app.post('/payment', async (req, res) => {
       res.status(500).json({ error: "Payment failed" });
     }
   });
-  //============================upi==============================================================================
-  // app.post("/check_payment_status", (req, res) => {
-  //   const { email, amount, date, time } = req.body;
-  //   const query = `
-  //     SELECT payment_status 
-  //     FROM payment_status 
-  //     WHERE emailid = ? 
-  //     AND amount = ? 
-  //     AND date = ? 
-  //     AND time = ?
-  //     ORDER BY created_at DESC LIMIT 1;`; // Fetch the most recent entry
-  
-  //   db.query(query, [email, amount, date, time], (err, result) => {
-  //     if (err) {
-  //       console.error('Error fetching payment status:', err);
-  //       return res.status(500).json({ error: 'Failed to retrieve payment status' });
-  //     }
-  
-  //     // If no record is found or the status is 'FAILED', return 'SUCCESS'
-  //     if (result.length === 0 || result[0].payment_status === 'FAILED') {
-  //       return res.status(200).json({ status: 'SUCCESS' });
-  //     }
-  
-  //     // Otherwise, return the actual payment status
-  //     const paymentStatus = result[0].payment_status;
-  //     return res.status(200).json({ status: paymentStatus });
-  //   });
-  // });
-  // app.post("/create-order", async (req, res) => {
-  //   const { amount } = req.body;
-  
-  //   try {
-  //     const response = await axios.post(
-  //       "https://api-m.sandbox.paypal.com/v2/checkout/orders",
-  //       {
-  //         intent: "CAPTURE",
-  //         purchase_units: [
-  //           {
-  //             amount: {
-  //               value: amount,
-  //               currency_code: "INR", 
-  //             },
-  //           },
-  //         ],
-  //       },
-  //       {
-  //         headers: {
-  //           Authorization: `Basic ${Buffer.from(
-  //             "AY2ILs6xIglGH5FvUblFJeDmzAGtEtNgIt6CAbpvyhy8pDH7S7Fg8Mp0TtBGQzdyEAhg3hNHaHWRFIHu:EDe2_eGJPOy_m4OAYtGKv74Wfs70zWMpqRXiMHTHrhF2v-r-3OoX2zzFtgl0--MIVo1uyi2tpR7hqvlg"
-  //           ).toString("base64")}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  
-  //     const orderID = response.data.id;
-  //     res.json({ orderID });
-  //   } catch (error) {
-  //     console.error("Error creating PayPal order:", error.message);
-  //     res.status(500).send({ error: "Failed to create PayPal order" });
-  //   }
-  // });
-  
-  // app.post("/payment-success", (req, res) => {
-  //   // Handle payment success logic
-  //   res.status(200).send("Payment Success");
-  // });
-  
-  // app.post("/payment-cancelled", (req, res) => {
-  //   // Handle payment cancellation logic
-  //   res.status(200).send("Payment Cancelled");
-  // });
+
 //================================================Payment_status====================================================================
 app.post("/payment_status", (req, res) => {
     console.log("Request received to store payment status");
@@ -420,6 +353,40 @@ app.get('/api/payment-status', (req, res) => {
     res.json(results); // Send the data back to the frontend
   });
 });
+//===========================================GET Total Movies Count=====================================================================
+app.get("/api/movies/count", (req, res) => {
+  const sql = "SELECT COUNT(*) AS total_movies FROM movie_info"; // SQL query to get the total count of movies
+  console.log("Executing SQL to fetch total movies count:", sql);  // Log the SQL query
+  db.query(sql, (err, result) => {
+      if (err) {
+          console.error("Error fetching movie count:", err);
+          return res.status(500).json({ message: "Error fetching movie count", error: err.message });
+      }
+      console.log("Total movies count result:", result);  // Log the result of the query
+      return res.status(200).json({ totalMovies: result[0].total_movies });
+  });
+});
+
+
+
+//===========================================GET Total Users Count=====================================================================
+app.get("/api/users/count", (req, res) => {
+  const sql = "SELECT COUNT(*) AS total_users FROM user"; // SQL query to get the total count of users
+  console.log("Executing SQL to fetch total users count:", sql);  // Log the SQL query
+  db.query(sql, (err, result) => {
+      if (err) {
+          console.error("Error fetching user count:", err);
+          return res.status(500).json({ message: "Error fetching user count", error: err.message });
+      }
+      console.log("Total users count result:", result);  // Log the result of the query
+      return res.status(200).json({ totalUsers: result[0].total_users });
+  });
+});
+
+
+
+
+
 //===================port connection======================================================================================
-const PORT = process.env.PORT || 3001; // or any other available port
+const PORT =3001; // or any other available port
 app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
